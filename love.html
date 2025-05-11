@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh">
+<meta charset="UTF-8" />
+<head>
+  <meta charset="UTF-8" />
+  <title>母亲节快乐</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      margin: 0;
+      background: black;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      height: 100vh;
+      color: white;
+      font-family: sans-serif;
+    }
+    canvas {
+      display: block;
+    }
+    .message {
+      position: absolute;
+      top: 20%;
+      text-align: center;
+      color: #FF99CC;
+    }
+    .sub-message {
+      color: #FF6699;
+      font-style: italic;
+      margin-top: 10px;
+      font-size: 24px;
+    }
+  </style>
+</head>
+<body>
+<canvas id="heartCanvas" width="400" height="400"></canvas>
+
+<div class="message" id="countdown">3</div>
+
+<script>
+const canvas = document.getElementById("heartCanvas");
+const ctx = canvas.getContext("2d");
+const WIDTH = canvas.width;
+const HEIGHT = canvas.height;
+const CANVAS_CENTER_X = WIDTH / 2;
+const CANVAS_CENTER_Y = HEIGHT / 2;
+const HEART_COLOR = "#FF99CC";
+
+// 倒计时逻辑
+const countdownEl = document.getElementById("countdown");
+let countdownNum = 3;
+
+function startCountdown(callback) {
+  const interval = setInterval(() => {
+    countdownNum--;
+    if (countdownNum > 0) {
+      countdownEl.textContent = countdownNum;
+    } else {
+      countdownEl.style.opacity = "0";
+      clearInterval(interval);
+      setTimeout(callback, 500);
+    }
+  }, 1000);
+}
+
+// 心形函数
+function heart_function(t, shrink_ratio = 8) {
+  let x = 16 * Math.pow(Math.sin(t), 3);
+  let y = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
+  x *= shrink_ratio;
+  y *= shrink_ratio;
+  x += CANVAS_CENTER_X;
+  y += CANVAS_CENTER_Y;
+  return [x, y];
+}
+
+// 动画点集合
+let points = [];
+
+for (let i = 0; i < 2000; i++) {
+  const t = Math.random() * 2 * Math.PI;
+  let [x, y] = heart_function(t);
+  points.push([x, y]);
+}
+
+function calc_position(x, y, ratio) {
+  const dx = ratio * (x - CANVAS_CENTER_X) + (Math.random() - 0.5) * 2;
+  const dy = ratio * (y - CANVAS_CENTER_Y) + (Math.random() - 0.5) * 2;
+  return [x - dx, y - dy];
+}
+
+function curve(p) {
+  return 2 * (2 * Math.sin(4 * p)) / (2 * Math.PI);
+}
+
+let frame = 0;
+
+function drawHeart() {
+  ctx.clearRect(0, 0, WIDTH, HEIGHT);
+
+  const ratio = 10 * curve(frame / 10 * Math.PI);
+
+  for (let [x, y] of points) {
+    let [nx, ny] = calc_position(x, y, ratio);
+    ctx.fillStyle = HEART_COLOR;
+    ctx.fillRect(nx, ny, 2, 2);
+  }
+
+  frame = (frame + 1) % 20;
+  requestAnimationFrame(drawHeart);
+}
+
+// 启动倒计时后开始爱心动画
+startCountdown(() => {
+  drawHeart();
+});
+</script>
+</body>
+</html>
